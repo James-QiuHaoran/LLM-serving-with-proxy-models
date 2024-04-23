@@ -8,7 +8,7 @@ BATCH_WAIT_TIMEOUT = 10
 DYNAMIC_BATCHING = True
 
 MODE = os.environ.get('MODE_ENV', 'NO_BATCHING')  # Default to NO_BATCHING if env var is not set
-MAX_BATCH_SIZE = int(os.environ.get('BATCH_SIZE_ENV', 2))  # Default to 2 if env var is not set
+MAX_BATCH_SIZE = int(os.environ.get('BATCH_SIZE_ENV', 1))  # Default to 1 if env var is not set
 DYNAMIC_BATCHING = os.environ.get('DYNAMIC_BATCHING_ENV', 'False').lower() == 'true'  # default False
 
 SJF_STARVATION_WAITING_TIME_THRES = 100  # 50
