@@ -418,7 +418,7 @@ def get_dataset_path():
     else:
         first_round = 'tail_'
     if TASK_TYPE == 0:
-        dataset_path = 'data/lmsys_' + first_round + vicuna_model + f'multi_cls_{int(selected_data_size / 1000)}K'
+        dataset_path = 'data/lmsys_' + first_round + vicuna_model + f'{int(selected_data_size / 1000)}K'
     elif TASK_TYPE == 1 or TASK_TYPE == 4:
         dataset_path = 'data/lmsys_' + first_round + vicuna_model + f'cls_{int(selected_data_size / 1000)}K'
     elif TASK_TYPE == 2 or TASK_TYPE == 3:
@@ -429,7 +429,7 @@ def get_dataset_path():
 
 if __name__ == '__main__':
     dataset_name = 'lmsys/lmsys-chat-1m'
-    
+
     parser = argparse.ArgumentParser()
     parser.add_argument('--all_models', action='store_true', default=False)
     parser.add_argument('--multi_round', action='store_true', default=False)
@@ -437,16 +437,17 @@ if __name__ == '__main__':
     parser.add_argument('--bert_tiny', action='store_true', default=False)
     parser.add_argument('--l1_loss', action='store_true', default=False)
     parser.add_argument('--task_type', type=int, help='0 for regression, 1 for binary cls, 2 for multi-cls, 3 for multi-cls ordinal, 4 for bi-cls ordinal', default=2)
+    parser.add_argument('--data_size', type=int, help='Size of the dataset to use (in thousands)', default=1000)
     args = parser.parse_args()
-    
+
     # 0: regression; 1: binary classification; 2: multi-class classification; 
     # 3: multi-class ordinal classification; 4: bi-class ordinal classification; 
-    
+
     TASK_TYPE = args.task_type
     FLAG_VICUNA_DATA_ONLY = not args.all_models
     FLAG_FIRST_ROUND_ONLY = not args.multi_round
     FALG_HEAD_TAIL = args.head_tail
-    
+
     FLAG_LOAD_MODEL_WEIGHTS = False
     FLAG_SAVE_MODEL_WEIGHTS = True
     if FLAG_LOAD_MODEL_WEIGHTS:
@@ -455,7 +456,7 @@ if __name__ == '__main__':
     FLAG_TINY_BERT = args.bert_tiny
     FLAG_L1_LOSS = args.l1_loss
     FLAG_WRITE_RESULTS = False
-    selected_data_size = 1000000
+    selected_data_size = 1000 * args.data_size
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model_names = ['vicuna-13b', 'wizardlm-13b', 'palm-2', 'llama-2-13b-chat', 'koala-13b',
                    'claude-instant-1', 'oasst-pythia-12b', 'alpaca-13b', 'mpt-7b-chat',
@@ -474,7 +475,7 @@ if __name__ == '__main__':
 
     output_filename = get_output_file_name()
     dataset_path = get_dataset_path()
-    
+
     num_epochs = 6
     train_batch_size = 16
     test_batch_size = 1
@@ -533,7 +534,7 @@ if __name__ == '__main__':
     print(f'Validation metrics after training:')
     for k, v in validation_metrics.items():
         print(f'{k}: {v:.4f}')
-        
+
     if FLAG_SAVE_MODEL_WEIGHTS:
         os.makedirs('./models', exist_ok=True)
         torch.save(model.state_dict(), './models/' + output_filename.split('.')[0] + '.pth')
@@ -578,7 +579,7 @@ if __name__ == '__main__':
                     if j >= 4:
                         break
                     metrics_data[j].append(v)
-            
+
             df = pd.DataFrame({ 
                 'Model Name': remaining_model_names,
                 'Accuracy': metrics_data[0], 

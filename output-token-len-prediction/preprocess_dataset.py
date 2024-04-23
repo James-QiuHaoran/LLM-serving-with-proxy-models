@@ -193,6 +193,7 @@ if __name__ == '__main__':
     parser.add_argument('--multi_round', action='store_true', default=False)
     parser.add_argument('--head_tail', action='store_true', default=False)
     parser.add_argument('--task_type', type=int, help='0 for regression, 1 for binary cls, 2 for multi-cls', default=2)
+    parser.add_argument('--data_size', type=int, help='Size of the dataset to use (in thousands)', default=1000)
     args = parser.parse_args()
 
     # 0: regression; 1: binary classification; 2: multi-class classification;
@@ -210,7 +211,7 @@ if __name__ == '__main__':
     vicuna_tokenizer = AutoTokenizer.from_pretrained("lmsys/vicuna-13b-v1.3", legacy=False)
     bert_tokenizer = AutoTokenizer.from_pretrained(model_name)
     bert_tokenizer.deprecation_warnings["Asking-to-pad-a-fast-tokenizer"] = True
-    selected_data_size = 1000000
+    selected_data_size = 1000 * args.data_size
 
     model_names = ['vicuna-13b', 'wizardlm-13b', 'palm-2', 'llama-2-13b-chat', 'koala-13b',
                    'claude-instant-1', 'oasst-pythia-12b', 'alpaca-13b', 'mpt-7b-chat',
