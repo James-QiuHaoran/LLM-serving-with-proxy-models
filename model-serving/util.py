@@ -2,12 +2,12 @@ import os
 
 
 # SCHEDULEING PARAMS
-MODE = 'NO_BATCHING'  # NO_BATCHING, STATIC_BATCHING, DYNAMIC_BATCHING
+MODE = 'DYNAMIC_BATCHING'  # NO_BATCHING, STATIC_BATCHING, DYNAMIC_BATCHING
 MAX_BATCH_SIZE = 2
 BATCH_WAIT_TIMEOUT = 10
-DYNAMIC_BATCHING = False
+DYNAMIC_BATCHING = True
 
-MODE = os.environ.get('MODE_ENV', 'NOBATCHING')  # Default to NOBATCHING if env var is not set
+MODE = os.environ.get('MODE_ENV', 'NO_BATCHING')  # Default to NO_BATCHING if env var is not set
 MAX_BATCH_SIZE = int(os.environ.get('BATCH_SIZE_ENV', 2))  # Default to 2 if env var is not set
 DYNAMIC_BATCHING = os.environ.get('DYNAMIC_BATCHING_ENV', 'False').lower() == 'true'  # default False
 
@@ -48,15 +48,23 @@ CLASSIFIERS = ['reg-l1', 'reg-mse', 'cls', 'multi-cls', 'multi-cls-l1', 'multi-c
 # RESULTS_DIR = 'results/scheduling-algo-barplots/'  # 'results/multi-round/'
 # RESULTS_DIR = 'results/cleaned_datasets_no_batching_single_round/'
 # RESULTS_DIR = 'results/cleaned_datasets_static_batching_'+str(MAX_BATCH_SIZE)+'_single_round/'
-RESULTS_DIR = 'results/cleaned_datasets_dynamic_batch_'+str(MAX_BATCH_SIZE)+'_single_round/'
+# RESULTS_DIR = 'results/cleaned_datasets_dynamic_batch_'+str(MAX_BATCH_SIZE)+'_single_round/'
 
 # RESULTS_DIR = 'results/cleaned_datasets_no_batching_multi_round/'
 # RESULTS_DIR = 'results/cleaned_datasets_static_batching_'+str(MAX_BATCH_SIZE)+'_multi_round/'
 # RESULTS_DIR = 'results/cleaned_datasets_dynamic_batch_'+str(MAX_BATCH_SIZE)+'_multi_round/'
 
-# if MODE == 'NO_BATCHING':
-#     RESULTS_DIR = 'results/cleaned_datasets_no_batching_round_'+str(TURN_ID)+'/'
-# elif MODE == 'STATIC_BATCHING':
-#     RESULTS_DIR = 'results/cleaned_datasets_static_batching_'+str(MAX_BATCH_SIZE)+'_round_'+str(TURN_ID)+'/'
-# elif MODE == 'DYNAMIC_BATCHING':
-#     RESULTS_DIR = 'results/cleaned_datasets_dynamic_batch_'+str(MAX_BATCH_SIZE)+'_round_'+str(TURN_ID)+'/'
+if PER_ROUND_EVAL:
+    if MODE == 'NO_BATCHING':
+        RESULTS_DIR = 'results/cleaned_datasets_no_batching_round_'+str(TURN_ID)+'/'
+    elif MODE == 'STATIC_BATCHING':
+        RESULTS_DIR = 'results/cleaned_datasets_static_batching_'+str(MAX_BATCH_SIZE)+'_round_'+str(TURN_ID)+'/'
+    elif MODE == 'DYNAMIC_BATCHING':
+        RESULTS_DIR = 'results/cleaned_datasets_dynamic_batch_'+str(MAX_BATCH_SIZE)+'_round_'+str(TURN_ID)+'/'
+else:
+    if MODE == 'NO_BATCHING':
+        RESULTS_DIR = 'results/cleaned_datasets_no_batching_single_round/'
+    elif MODE == 'STATIC_BATCHING':
+        RESULTS_DIR = 'results/cleaned_datasets_static_batching_'+str(MAX_BATCH_SIZE)+'_single_round/'
+    elif MODE == 'DYNAMIC_BATCHING':
+        RESULTS_DIR = 'results/cleaned_datasets_dynamic_batch_'+str(MAX_BATCH_SIZE)+'_single_round/'

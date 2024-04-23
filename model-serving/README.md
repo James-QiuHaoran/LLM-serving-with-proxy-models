@@ -1,5 +1,7 @@
 ## Scheduling Simulator
 
+Scheduling simulator is based on runtime data and prediction results located at `prediction/final/`.
+
 ### Usage
 
 ```
@@ -52,6 +54,37 @@ RESULTS_DIR = 'results/cleaned_datasets_no_batching_single_round/'
 ```
 
 Run the evaluation script and plot the results on a barplot:
+
+#### No Batching
+
+Set these parameters in `util.py`:
+- MODE = 'NO_BATCHING'
+- MAX_BATCH_SIZE = 1
+- DYNAMIC_BATCHING = False
+
+```
+python auto_eval.py
+python auto_eval_barplot.py
+```
+
+#### Static Batching
+
+Set these parameters in `util.py`:
+- MODE = 'STATIC_BATCHING'
+- MAX_BATCH_SIZE = 2
+- DYNAMIC_BATCHING = False
+
+```
+python auto_eval.py
+python auto_eval_barplot.py
+```
+
+#### Dynamic Batching
+
+Set these parameters in `util.py`:
+- MODE = 'DYNAMIC_BATCHING'
+- MAX_BATCH_SIZE = 2
+- DYNAMIC_BATCHING = True
 
 ```
 python auto_eval.py

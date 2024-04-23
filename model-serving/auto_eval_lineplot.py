@@ -21,7 +21,7 @@ nice_fonts = {
 
 matplotlib.rcParams.update(nice_fonts)
 
-SAVE_FIGURES = False
+SAVE_FIGURES = True
 LEANED_SAVED_FIGURES = True
 CACHING = False
 REMOVING_L1 = False
@@ -41,7 +41,6 @@ fig_size_w = 6
 fig_size_h = 3
 num_cols = 2
 x_ticks_reduction = 2  # used to reduce the number of boxes in boxplots
-width = 0.1  # the width of the bars
 cache = 0.23
 
 
@@ -109,6 +108,7 @@ def draw_lineplots(df, x_key, x_label, distribution='poisson', percentile=PERCEN
         plt.tight_layout()
         if SAVE_FIGURES:
             if LEANED_SAVED_FIGURES and not key_figure(distribution, key, x_key):
+                print('Skipping saving figure for', distribution, key, x_key)
                 pass
             else:
                 plt.savefig(RESULTS_DIR + 'lineplot-' + distribution + '-' + key + '-vs-' + x_key + '.pdf')
