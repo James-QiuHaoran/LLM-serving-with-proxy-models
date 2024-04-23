@@ -50,6 +50,8 @@ The repo is tested on:
 - NVIDIA Tesla V100 (32GB)
 
 ```
+conda create -n llm-env python=3.11 -y
+conda activate llm-env
 pip install -r requirements.txt
 ```
 
@@ -58,13 +60,14 @@ pip install -r requirements.txt
 Training and evaluation dataset generation:
 
 ```
-python preprocess_dataset.py
+cd output-token-len-predictions
+python preprocess_dataset.py [--FLAGS]
 ```
 
 Training and evaluation of the output token length predictor:
 
 ```
-python latency_prediction.py
+python latency_prediction.py [--FLAGS]
 ```
 
 ### Modes
