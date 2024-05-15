@@ -178,10 +178,7 @@ def train(model, criterion, optimizer, train_dataloader, validation_dataloader, 
             else:
                 model_name = batch['model'].to(device)
                 output = model(input_ids=input_ids, attention_mask=attention_mask, model_name=model_name)
-            if TASK_TYPE == 0:
-                labels = batch['num_tokens'].to(device)
-            else:
-                labels = batch['labels'].to(device)
+            labels = batch['labels'].to(device)
             if TASK_TYPE == 0 or TASK_TYPE == 3 or TASK_TYPE == 4:
                 loss = criterion(output, labels.float())
             else:
@@ -269,10 +266,7 @@ def eval_regression(model, dataloader, device):
             else:
                 model_name = batch['model'].to(device)
                 prediction = model(input_ids=input_ids, attention_mask=attention_mask, model_name=model_name)
-            if TASK_TYPE == 0:
-                labels = batch['num_tokens'].to(device)
-            else:
-                labels = batch['labels'].to(device)
+            labels = batch['labels'].to(device)
             l1err += l1loss(prediction, labels.type_as(prediction))
             mse += mseloss(prediction, labels.type_as(prediction))
 
@@ -354,7 +348,7 @@ def predict(model, dataloader, device):
                 model_name = batch['model'].to(device)
                 predictions = model(input_ids=input_ids, attention_mask=attention_mask, model_name=model_name)
             if TASK_TYPE == 0 or TASK_TYPE == 3 or TASK_TYPE == 4:
-                lengths = batch['num_tokens']
+                lengths = batch['labels']
                 predictions = predictions
             else:
                 predictions = torch.argmax(predictions, dim=-1)
