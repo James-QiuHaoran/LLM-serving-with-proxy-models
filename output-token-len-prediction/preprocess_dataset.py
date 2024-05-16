@@ -88,6 +88,7 @@ def extract_first_round_prompt(example):
 
     example['prompt'] = user_content
     encoded_response = vicuna_tokenizer(assistant_content, truncation=False)
+    example['num_tokens'] = len(encoded_response['input_ids'])
     if task_type == 0:
         example['labels'] = len(encoded_response['input_ids'])
     else:
@@ -95,8 +96,7 @@ def extract_first_round_prompt(example):
             if len(encoded_response['input_ids']) < thresh:
                 example['labels'] = i
                 break
-        example['num_tokens'] = len(encoded_response['input_ids'])
-    return example 
+    return example
 
 
 def tokenize_function(example):
