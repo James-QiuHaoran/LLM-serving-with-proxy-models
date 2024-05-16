@@ -70,7 +70,7 @@ Training and evaluation of the output token length predictor:
 python latency_prediction.py [--FLAGS]
 ```
 
-### Modes
+#### Training Modes and Usage
 
 Predictor supports four basic modes:
 - Regression `--task_type 0`
@@ -85,9 +85,22 @@ For regression and ordinal classification, you can choose to use L1 loss or MSE 
 
 To enable multi-round support, add the `--multi_round` flag.
 
+To limit the data size, add the ``
+
 Example commands can be found in `output-token-len-prediction/script.sh`.
 
-#### Characterization
+```
+# data generation (10K samples)
+python preprocess_dataset.py --task_type 0 --data_size 10
+
+# predictor training (regression with MSE loss)
+python latency_prediction.py --task_type 0 --data_size 10
+
+# predictor training (regression with L1 loss)
+python latency_prediction.py --task_type 0 --l1_loss --data_size 10
+```
+
+### Characterization
 
 To understand your LLM model's output token length distribution, check out the characterization folder: `characterization/`.
 
