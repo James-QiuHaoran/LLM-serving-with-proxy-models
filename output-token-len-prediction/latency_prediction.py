@@ -410,7 +410,7 @@ def get_output_file_name():
 
 
 def get_dataset_path():
-    vicuna_model = 'vicuna_' if FLAG_VICUNA_DATA_ONLY else ''
+    model_name = args.model_name.lower()+'_' if FLAG_VICUNA_DATA_ONLY else ''
     if FLAG_FIRST_ROUND_ONLY:
         first_round = 'first_round_data_'
     elif FALG_HEAD_TAIL:
@@ -418,12 +418,12 @@ def get_dataset_path():
     else:
         first_round = 'tail_'
     if TASK_TYPE == 0:
-        dataset_path = 'data/lmsys_' + first_round + vicuna_model + f'{int(selected_data_size / 1000)}K'
+        dataset_path = 'data/lmsys_' + first_round + model_name + f'{int(selected_data_size / 1000)}K'
     elif TASK_TYPE == 1 or TASK_TYPE == 4:
-        dataset_path = 'data/lmsys_' + first_round + vicuna_model + f'cls_{int(selected_data_size / 1000)}K'
+        dataset_path = 'data/lmsys_' + first_round + model_name + f'cls_{int(selected_data_size / 1000)}K'
     elif TASK_TYPE == 2 or TASK_TYPE == 3:
         # multi_cls or ordinal_cls:
-        dataset_path = 'data/lmsys_' + first_round + vicuna_model + f'multi_cls_{int(selected_data_size / 1000)}K'
+        dataset_path = 'data/lmsys_' + first_round + model_name + f'multi_cls_{int(selected_data_size / 1000)}K'
     return dataset_path
 
 
@@ -438,6 +438,7 @@ if __name__ == '__main__':
     parser.add_argument('--l1_loss', action='store_true', default=False)
     parser.add_argument('--task_type', type=int, help='0 for regression, 1 for binary cls, 2 for multi-cls, 3 for multi-cls ordinal, 4 for bi-cls ordinal', default=2)
     parser.add_argument('--data_size', type=int, help='Size of the dataset to use (in thousands)', default=1000)
+    parser.add_argument('--model_name', type=str, help='Name of the LLM to predict for', default='vicuna-13b')
     args = parser.parse_args()
 
     # 0: regression; 1: binary classification; 2: multi-class classification; 

@@ -194,6 +194,7 @@ if __name__ == '__main__':
     parser.add_argument('--head_tail', action='store_true', default=False)
     parser.add_argument('--task_type', type=int, help='0 for regression, 1 for binary cls, 2 for multi-cls', default=2)
     parser.add_argument('--data_size', type=int, help='Size of the dataset to use (in thousands)', default=1000)
+    parser.add_argument('--model_name', type=str, help='Name of the LLM to predict for', default='vicuna-13b')
     args = parser.parse_args()
 
     # 0: regression; 1: binary classification; 2: multi-class classification;
@@ -208,7 +209,7 @@ if __name__ == '__main__':
         multi_cls_thresholds = [42, 141, 294, 503, 1000000] if FLAG_FIRST_ROUND_ONLY else [58, 147, 280, 499, 100000]
     dataset_name = 'lmsys/lmsys-chat-1m'
     model_name = 'bert-base-uncased'
-    vicuna_tokenizer = AutoTokenizer.from_pretrained("lmsys/vicuna-13b-v1.3", legacy=False)
+    vicuna_tokenizer = AutoTokenizer.from_pretrained("lmsys/vicuna-13b-v1.3", legacy=False)  # using vicuna-13b tokenizer for simplicity
     bert_tokenizer = AutoTokenizer.from_pretrained(model_name)
     bert_tokenizer.deprecation_warnings["Asking-to-pad-a-fast-tokenizer"] = True
     selected_data_size = 1000 * args.data_size
@@ -221,7 +222,11 @@ if __name__ == '__main__':
                     'claude-2', 'gpt4all-13b-snoozy']
     model_name_to_idx = {model_names[i]: i for i in range(len(model_names))}
 
-    dataset_path = 'vicuna_' if FLAG_VICUNA_DATA_ONLY else ''
+    if args.model_name not in model_names:
+        print('Model name not found in the list of models:', model_names)
+        exit()
+
+    dataset_path = args.model_name.lower()+'_' if FLAG_VICUNA_DATA_ONLY else ''
     dataset_path = dataset_path if task_type == 0 else dataset_path + 'cls_' if task_type == 1 else dataset_path + 'multi_cls_'
     if FLAG_FIRST_ROUND_ONLY:
         dataset_path = 'first_round_data_' + dataset_path
@@ -234,7 +239,7 @@ if __name__ == '__main__':
     dataset = load_dataset(dataset_name, split='train')
     dataset = dataset.select(range(selected_data_size))
     if FLAG_VICUNA_DATA_ONLY:
-        dataset = dataset.filter(lambda example: example["model"] == 'vicuna-13b')
+        dataset = dataset.filter(lambda example: example["model"] == args.model_name)
     dataset = dataset.shuffle(seed=1)
     dataset = preprocess_dataset(dataset)
 

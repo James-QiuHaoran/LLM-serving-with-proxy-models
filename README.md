@@ -70,7 +70,7 @@ Training and evaluation of the output token length predictor:
 python latency_prediction.py [--FLAGS]
 ```
 
-### Modes
+### Predictor Types and Command Flags
 
 Predictor supports four basic modes:
 - Regression `--task_type 0`
@@ -84,6 +84,10 @@ For regression and ordinal classification, you can choose to use L1 loss or MSE 
 - MSE loss (simply no flag)
 
 To enable multi-round support, add the `--multi_round` flag.
+
+To train a customized predictor for a particular LLM model, you can use the `--model_name` flag to specify which LLM model.
+
+To train a predictor for all models, use the `--all_models` flag.
 
 Example commands can be found in `output-token-len-prediction/script.sh`.
 
