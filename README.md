@@ -89,9 +89,22 @@ To train a customized predictor for a particular LLM model, you can use the `--m
 
 To train a predictor for all models, use the `--all_models` flag.
 
+To limit the data size, add the `--data_size` flag.
+
 Example commands can be found in `output-token-len-prediction/script.sh`.
 
-#### Characterization
+```
+# data generation (10K samples)
+python preprocess_dataset.py --task_type 0 --data_size 10
+
+# predictor training (regression with MSE loss)
+python latency_prediction.py --task_type 0 --data_size 10
+
+# predictor training (regression with L1 loss)
+python latency_prediction.py --task_type 0 --l1_loss --data_size 10
+```
+
+### Characterization
 
 To understand your LLM model's output token length distribution, check out the characterization folder: `characterization/`.
 
