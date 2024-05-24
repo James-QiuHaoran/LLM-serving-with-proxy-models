@@ -5,7 +5,7 @@ from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_sc
 from sklearn.metrics import mean_squared_error, r2_score
 
 
-VISUALIZATION = True
+PER_ROUND_EVAL = False
 eval_cases = {
     # 'regression-l1': 'predictions_warmup_reg_l1_1000K.csv',
     # 'regression-mse': 'predictions_warmup_reg_mse_1000K.csv', 
@@ -53,22 +53,35 @@ def eval_prediction_model_binary_cls(df_all, model_name):
 
     # evaluate ranking accuracy
     ranking_acc_list = []
-    for i in range(200):
+    pred_acc_list = []
+    for _ in range(300):
         sample_size = 50
         y_true_sample = np.random.choice(y_true, size=sample_size, replace=False)
         y_pred_sample = [y_pred[y_true.index(y)] for y in y_true_sample]
 
+        # calculate prediction accuracy
+        pred_acc = sum([1 if y_pred_sample[i] == y_true_sample[i] else 0 for i in range(sample_size)]) / sample_size
+        pred_acc_list.append(pred_acc)
+
         y_true_sorted_indices = sorted(range(len(y_true_sample)), key=lambda i: y_true_sample[i])
         y_pred_sorted_indices = sorted(range(len(y_pred_sample)), key=lambda i: y_pred_sample[i])
 
-        ranking_accuracy = sum([y_true_sorted_indices[i] > y_true_sorted_indices[j]
-                                if y_pred_sorted_indices[i] > y_pred_sorted_indices[j]
-                                else y_true_sorted_indices[i] < y_true_sorted_indices[j]
+        # weighted ranking accuracy
+        total_weight = sum(y_true_sample)
+        ranking_accuracy = sum([y_true_sorted_indices[i] >= y_true_sorted_indices[j] * y_true_sample[y_true_sorted_indices[i]] / total_weight
+                                if y_pred_sorted_indices[i] >= y_pred_sorted_indices[j]
+                                else -1 * y_true_sample[y_true_sorted_indices[i]] / total_weight
                                 for i in range(len(y_true_sample))
                                 for j in range(i)]) / (sample_size * (sample_size - 1) / 2)
+        # ranking_accuracy = sum([y_true_sorted_indices[i] >= y_true_sorted_indices[j]
+        #                         if y_pred_sorted_indices[i] >= y_pred_sorted_indices[j]
+        #                         else y_true_sorted_indices[i] < y_true_sorted_indices[j]
+        #                         for i in range(len(y_true_sample))
+        #                         for j in range(i)]) / (sample_size * (sample_size - 1) / 2)
         ranking_acc_list.append(ranking_accuracy)
 
     print(f"Ranking accuracy (based on per-{sample_size} random samples): {np.mean(ranking_acc_list):.4f}")
+    print(f"Prediction accuracy (based on per-{sample_size} random samples): {np.mean(pred_acc_list):.4f}")
     print()
 
 
@@ -117,22 +130,35 @@ def eval_prediction_model_multi_cls(df_all, model_name, multi_round=False, from_
 
     # evaluate ranking accuracy
     ranking_acc_list = []
-    for i in range(200):
+    pred_acc_list = []
+    for _ in range(300):
         sample_size = 50
         y_true_sample = np.random.choice(y_true, size=sample_size, replace=False)
         y_pred_sample = [y_pred[y_true.index(y)] for y in y_true_sample]
 
+        # calculate prediction accuracy
+        pred_acc = sum([1 if y_pred_sample[i] == y_true_sample[i] else 0 for i in range(sample_size)]) / sample_size
+        pred_acc_list.append(pred_acc)
+
         y_true_sorted_indices = sorted(range(len(y_true_sample)), key=lambda i: y_true_sample[i])
         y_pred_sorted_indices = sorted(range(len(y_pred_sample)), key=lambda i: y_pred_sample[i])
 
-        ranking_accuracy = sum([y_true_sorted_indices[i] > y_true_sorted_indices[j]
-                                if y_pred_sorted_indices[i] > y_pred_sorted_indices[j]
-                                else y_true_sorted_indices[i] < y_true_sorted_indices[j]
+        # weighted ranking accuracy
+        total_weight = sum(y_true_sample)
+        ranking_accuracy = sum([y_true_sorted_indices[i] >= y_true_sorted_indices[j] * y_true_sample[y_true_sorted_indices[i]] / total_weight
+                                if y_pred_sorted_indices[i] >= y_pred_sorted_indices[j]
+                                else -1 * y_true_sample[y_true_sorted_indices[i]] / total_weight
                                 for i in range(len(y_true_sample))
                                 for j in range(i)]) / (sample_size * (sample_size - 1) / 2)
+        # ranking_accuracy = sum([y_true_sorted_indices[i] >= y_true_sorted_indices[j]
+        #                         if y_pred_sorted_indices[i] >= y_pred_sorted_indices[j]
+        #                         else y_true_sorted_indices[i] < y_true_sorted_indices[j]
+        #                         for i in range(len(y_true_sample))
+        #                         for j in range(i)]) / (sample_size * (sample_size - 1) / 2)
         ranking_acc_list.append(ranking_accuracy)
 
     print(f"[Multi-class] Ranking accuracy (based on per-{sample_size} random samples): {np.mean(ranking_acc_list):.4f}")
+    print(f"[Multi-class] Prediction accuracy (based on per-{sample_size} random samples): {np.mean(pred_acc_list):.4f}")
     print()
 
 
@@ -151,22 +177,35 @@ def eval_prediction_model_regression(df_all, model_name):
 
     # evaluate ranking accuracy
     ranking_acc_list = []
-    for i in range(200):
+    pred_acc_list = []
+    for _ in range(300):
         sample_size = 50
         y_true_sample = np.random.choice(y_true, size=sample_size, replace=False)
         y_pred_sample = [y_pred[y_true.index(y)] for y in y_true_sample]
 
+        # calculate prediction accuracy
+        pred_acc = sum([1 if y_pred_sample[i] == y_true_sample[i] else 0 for i in range(sample_size)]) / sample_size
+        pred_acc_list.append(pred_acc)
+
         y_true_sorted_indices = sorted(range(len(y_true_sample)), key=lambda i: y_true_sample[i])
         y_pred_sorted_indices = sorted(range(len(y_pred_sample)), key=lambda i: y_pred_sample[i])
 
-        ranking_accuracy = sum([y_true_sorted_indices[i] > y_true_sorted_indices[j]
-                                if y_pred_sorted_indices[i] > y_pred_sorted_indices[j]
-                                else y_true_sorted_indices[i] < y_true_sorted_indices[j]
+        # ranking_accuracy = sum([y_true_sorted_indices[i] >= y_true_sorted_indices[j]
+        #                         if y_pred_sorted_indices[i] >= y_pred_sorted_indices[j]
+        #                         else y_true_sorted_indices[i] < y_true_sorted_indices[j]
+        #                         for i in range(len(y_true_sample))
+        #                         for j in range(i)]) / (sample_size * (sample_size - 1) / 2)
+        # weighted ranking accuracy
+        total_weight = sum(y_true_sample)
+        ranking_accuracy = sum([y_true_sorted_indices[i] >= y_true_sorted_indices[j] * y_true_sample[y_true_sorted_indices[i]] / total_weight
+                                if y_pred_sorted_indices[i] >= y_pred_sorted_indices[j]
+                                else -1 * y_true_sample[y_true_sorted_indices[i]] / total_weight
                                 for i in range(len(y_true_sample))
                                 for j in range(i)]) / (sample_size * (sample_size - 1) / 2)
         ranking_acc_list.append(ranking_accuracy)
 
     print(f"[Regression] Ranking accuracy (based on per-{sample_size} random samples): {np.mean(ranking_acc_list):.4f}")
+    print(f"[Regression] Prediction accuracy (based on per-{sample_size} random samples): {np.mean(pred_acc_list):.4f}")
     print()
 
 
@@ -268,8 +307,9 @@ if 'multi-round-regression-l1' in eval_cases:
     eval_prediction_model_multi_cls(df, 'vicuna-13b', multi_round=True, from_regression=True)
 
     # per-round evaluation
-    print('>>> Per-round Regression (L1) Evaluation <<<')
-    for i in range(5):
-        df_round = df[df['turn_id'] == i]
-        print('>>> Round', i, '<<<')
-        eval_prediction_model_multi_cls(df_round, 'vicuna-13b', multi_round=True, from_regression=True)
+    if PER_ROUND_EVAL:
+        print('>>> Per-round Regression (L1) Evaluation <<<')
+        for i in range(5):
+            df_round = df[df['turn_id'] == i]
+            print('>>> Round', i, '<<<')
+            eval_prediction_model_multi_cls(df_round, 'vicuna-13b', multi_round=True, from_regression=True)
