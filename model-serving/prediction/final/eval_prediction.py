@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.metrics import f1_score, accuracy_score, precision_score, recall_score
+from sklearn.metrics import mean_squared_error, r2_score
 
 
 VISUALIZATION = False
@@ -88,6 +89,10 @@ def eval_prediction_model_multi_cls(df_all, model_name, multi_round=False, from_
     print('F1 (multi-class) (micro):', f1_score(y_true, y_pred, average='micro'))
     print('F1 (multi-class) (weighted):', f1_score(y_true, y_pred, average='weighted'))
     print('F1 (multi-class) (per-class):', f1_score(y_true, y_pred, average=None, labels=[0, 1, 2, 3, 4]))
+    # print the percentage of each classes in all the labels
+    print('Percentage of each class in all the labels:')
+    for i in range(5):
+        print('Class', i, ':', len([j for j in y_true if j == i]) / len(y_true))
     print('Precision (multi-class) (weighted):', precision_score(y_true, y_pred, average='weighted', zero_division=np.nan))
     print('Recall (multi-class) (weighted):', recall_score(y_true, y_pred, average='weighted'))
 
@@ -109,6 +114,58 @@ def eval_prediction_model_multi_cls(df_all, model_name, multi_round=False, from_
     print('Precision (single-class):', precision_score(y_true, y_pred))
     print('Recall (single-class):', recall_score(y_true, y_pred))
     print('F1 (single-class):', f1_score(y_true, y_pred))
+    print()
+
+
+# evaluation for regression
+def eval_prediction_model_regression(df_all, model_name):
+    if model_name == 'all':
+        df = df_all
+    else:
+        df = df_all[df_all['model'] == model_name]
+
+    y_true = []
+    y_pred = []
+    for _, row in df.iterrows():
+        y_true.append(float(row['output_token_length']))
+        y_pred.append(float(row['predicted_length']))
+
+    # calculate residuals
+    y_true = np.array(y_true)
+    y_pred = np.array(y_pred)
+    residuals = abs((y_true - y_pred) / 512) * 100
+
+    if VISUALIZATION:
+        # plot histogram of residuals
+        plt.figure(figsize=(8, 6))
+        plt.hist(residuals, bins=20, edgecolor='black')
+        plt.title('Distribution of Residuals')
+        plt.xlabel('Residuals (%)')
+        plt.ylabel('Frequency')
+        plt.savefig('residuals_histogram.png')
+        # plt.scatter(y_true, residuals, alpha=0.1)
+        # plt.axhline(y=0, color='r', linestyle='--', label='Zero residual line')
+        # plt.xlabel('Labels')
+        # plt.ylabel('Residuals (%)')
+        # plt.title('Residuals vs. Labels')
+        # plt.legend()
+        # plt.savefig('residuals_scatter.png')
+
+    # calculate mean and variance of residuals
+    residual_mean = np.mean(residuals)
+    residual_variance = np.var(residuals)
+    print(f"Mean of residuals: {residual_mean:.4f}")
+    print(f"Variance of residuals: {residual_variance:.4f}")
+
+    # calculate evaluation metrics
+    mse = mean_squared_error(y_true, y_pred)
+    rmse = np.sqrt(mse)
+    mae = np.mean(np.abs(residuals))
+    r2 = r2_score(y_true, y_pred)
+    print(f"Mean Squared Error (MSE): {mse:.4f}")
+    print(f"Root Mean Squared Error (RMSE): {rmse:.4f}")
+    print(f"Mean Absolute Error (MAE): {mae:.4f}")
+    print(f"R-squared: {r2:.4f}")
     print()
 
 
@@ -150,6 +207,7 @@ if 'regression-mse' in eval_cases:
     # print(df.head())
     print('>>> Single-round Regression (MSE) Evaluation <<<')
     eval_prediction_model_multi_cls(df, 'vicuna-13b', multi_round=False, from_regression=True)
+    eval_prediction_model_regression(df, 'vicuna-13b')
 
 
 ### Single-round Regression (L1) Evaluation ###
@@ -158,6 +216,7 @@ if 'regression-l1' in eval_cases:
     # print(df.head())
     print('>>> Single-round Regression (L1) Evaluation <<<')
     eval_prediction_model_multi_cls(df, 'vicuna-13b', multi_round=False, from_regression=True)
+    eval_prediction_model_regression(df, 'vicuna-13b')
 
 
 ### Multi-round Binary-class Classification Evaluation ###
