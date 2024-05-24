@@ -94,6 +94,7 @@ To limit the data size, add the `--data_size` flag.
 Example commands can be found in `output-token-len-prediction/script.sh`.
 
 ```
+# by default predictor for vicuna-13b
 # data generation (10K samples)
 python preprocess_dataset.py --task_type 0 --data_size 10
 
@@ -102,6 +103,14 @@ python latency_prediction.py --task_type 0 --data_size 10
 
 # predictor training (regression with L1 loss)
 python latency_prediction.py --task_type 0 --l1_loss --data_size 10
+
+# predictor training all LLMs
+python preprocess_dataset.py --task_type 0 --data_size 10 --all_models
+python latency_prediction.py --task_type 0 --data_size 10 --all_models
+
+# predictor training for a particular LLM model
+python preprocess_dataset.py --task_type 0 --data_size 100 --model_name "gpt-4"
+python latency_prediction.py --task_type 0 --data_size 100 --model_name "gpt-4"
 ```
 
 ### Characterization

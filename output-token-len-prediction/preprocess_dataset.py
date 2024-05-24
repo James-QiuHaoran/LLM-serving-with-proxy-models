@@ -115,6 +115,10 @@ def tokenize_function(example):
 
 def replace_model_name_by_idx(example):
     example['model'] = model_name_to_idx[example['model']]
+    # update the model idx with one hot encoding
+    arr = [0 for _ in range(num_models)]
+    arr[example['model']] = 1
+    example['model'] = arr
     return example
 
 
@@ -216,11 +220,12 @@ if __name__ == '__main__':
 
     model_names = ['vicuna-13b', 'wizardlm-13b', 'palm-2', 'llama-2-13b-chat', 'koala-13b',
                    'claude-instant-1', 'oasst-pythia-12b', 'alpaca-13b', 'mpt-7b-chat',
-                    'vicuna-7b', 'dolly-v2-12b', 'mpt-30b-chat', 'fastchat-t5-3b', 'chatglm-6b',
-                    'claude-1', 'gpt-4', 'vicuna-33b', 'guanaco-33b', 'RWKV-4-Raven-14B',
-                    'stablelm-tuned-alpha-7b', 'llama-13b', 'gpt-3.5-turbo', 'llama-2-7b-chat',
-                    'claude-2', 'gpt4all-13b-snoozy']
+                   'vicuna-7b', 'dolly-v2-12b', 'mpt-30b-chat', 'fastchat-t5-3b', 'chatglm-6b',
+                   'claude-1', 'gpt-4', 'vicuna-33b', 'guanaco-33b', 'RWKV-4-Raven-14B',
+                   'stablelm-tuned-alpha-7b', 'llama-13b', 'gpt-3.5-turbo', 'llama-2-7b-chat',
+                   'claude-2', 'gpt4all-13b-snoozy']
     model_name_to_idx = {model_names[i]: i for i in range(len(model_names))}
+    num_models = len(model_names)
 
     if args.model_name not in model_names:
         print('Model name not found in the list of models:', model_names)
@@ -243,7 +248,6 @@ if __name__ == '__main__':
     dataset = dataset.shuffle(seed=1)
     dataset = preprocess_dataset(dataset)
 
-    num_models = len(model_names)
     percentiles = [[] for _ in range(num_models)]
     if task_type != 0:
         dataset = calc_percentile(dataset)

@@ -388,6 +388,8 @@ def get_output_file_name():
             output_filename += 'multiround_tail_'
     if not FLAG_VICUNA_DATA_ONLY:
         output_filename += 'all_models_'
+    else:
+        output_filename += args.model_name.lower() + '_'
     if FLAG_BERT_TUNING:
         output_filename += 'warmup_'
     if FLAG_TINY_BERT:
@@ -461,10 +463,10 @@ if __name__ == '__main__':
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model_names = ['vicuna-13b', 'wizardlm-13b', 'palm-2', 'llama-2-13b-chat', 'koala-13b',
                    'claude-instant-1', 'oasst-pythia-12b', 'alpaca-13b', 'mpt-7b-chat',
-                    'vicuna-7b', 'dolly-v2-12b', 'mpt-30b-chat', 'fastchat-t5-3b', 'chatglm-6b',
-                    'claude-1', 'gpt-4', 'vicuna-33b', 'guanaco-33b', 'RWKV-4-Raven-14B',
-                    'stablelm-tuned-alpha-7b', 'llama-13b', 'gpt-3.5-turbo', 'llama-2-7b-chat',
-                    'claude-2', 'gpt4all-13b-snoozy']
+                   'vicuna-7b', 'dolly-v2-12b', 'mpt-30b-chat', 'fastchat-t5-3b', 'chatglm-6b',
+                   'claude-1', 'gpt-4', 'vicuna-33b', 'guanaco-33b', 'RWKV-4-Raven-14B',
+                   'stablelm-tuned-alpha-7b', 'llama-13b', 'gpt-3.5-turbo', 'llama-2-7b-chat',
+                   'claude-2', 'gpt4all-13b-snoozy']
     num_models = len(model_names)
 
     model_name = 'prajjwal1/bert-tiny' if FLAG_TINY_BERT else 'bert-base-uncased'
