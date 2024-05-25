@@ -102,7 +102,7 @@ def extract_first_round_prompt(example):
 def tokenize_function(example):
     example = bert_tokenizer(example["prompt"], truncation=False)
     if len(example['input_ids']) >= 512:
-        if FALG_HEAD_TAIL:
+        if FLAG_HEAD_TAIL:
             example['input_ids'] = example['input_ids'][: 128] + example['input_ids'][-384: ]
             example['token_type_ids'] = example['token_type_ids'][: 128] + example['token_type_ids'][-384: ]
             example['attention_mask'] = example['attention_mask'][: 128] + example['attention_mask'][-384: ]
@@ -205,7 +205,7 @@ if __name__ == '__main__':
     task_type = args.task_type
     FLAG_VICUNA_DATA_ONLY = not args.all_models
     FLAG_FIRST_ROUND_ONLY = not args.multi_round
-    FALG_HEAD_TAIL = args.head_tail
+    FLAG_HEAD_TAIL = args.head_tail
     # cls_threshold = 328
     if task_type == 1:
         multi_cls_thresholds = [141, 503, 1000000]
@@ -235,7 +235,7 @@ if __name__ == '__main__':
     dataset_path = dataset_path if task_type == 0 else dataset_path + 'cls_' if task_type == 1 else dataset_path + 'multi_cls_'
     if FLAG_FIRST_ROUND_ONLY:
         dataset_path = 'first_round_data_' + dataset_path
-    elif FALG_HEAD_TAIL:
+    elif FLAG_HEAD_TAIL:
         dataset_path = 'headtail_' + dataset_path
     else:
         dataset_path = 'tail_' + dataset_path
