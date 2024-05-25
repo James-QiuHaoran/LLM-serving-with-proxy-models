@@ -382,7 +382,7 @@ def predict(model, dataloader, device):
 def get_output_file_name():
     output_filename = 'predictions_'
     if not FLAG_FIRST_ROUND_ONLY:
-        if FALG_HEAD_TAIL:
+        if FLAG_HEAD_TAIL:
             output_filename += 'multiround_headtail_'
         else:
             output_filename += 'multiround_tail_'
@@ -415,7 +415,7 @@ def get_dataset_path():
     model_name = args.model_name.lower()+'_' if FLAG_VICUNA_DATA_ONLY else ''
     if FLAG_FIRST_ROUND_ONLY:
         first_round = 'first_round_data_'
-    elif FALG_HEAD_TAIL:
+    elif FLAG_HEAD_TAIL:
         first_round = 'headtail_'
     else:
         first_round = 'tail_'
@@ -449,7 +449,7 @@ if __name__ == '__main__':
     TASK_TYPE = args.task_type
     FLAG_VICUNA_DATA_ONLY = not args.all_models
     FLAG_FIRST_ROUND_ONLY = not args.multi_round
-    FALG_HEAD_TAIL = args.head_tail
+    FLAG_HEAD_TAIL = args.head_tail
 
     FLAG_LOAD_MODEL_WEIGHTS = False
     FLAG_SAVE_MODEL_WEIGHTS = True
