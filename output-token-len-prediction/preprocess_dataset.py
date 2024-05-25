@@ -115,10 +115,13 @@ def tokenize_function(example):
 
 def replace_model_name_by_idx(example):
     example['model'] = model_name_to_idx[example['model']]
-    # update the model idx with one hot encoding
-    arr = [0 for _ in range(num_models)]
-    arr[example['model']] = 1
-    example['model'] = arr
+    if task_type == 0:
+        # update the model idx with one hot encoding
+        # only for task_type == 0 because in other task types, the model idx will be one-hot coded
+        # in the recalc_labels_and_one_hot_model_name function
+        arr = [0 for _ in range(num_models)]
+        arr[example['model']] = 1
+        example['model'] = arr
     return example
 
 
