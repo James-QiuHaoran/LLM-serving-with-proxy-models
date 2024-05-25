@@ -441,6 +441,8 @@ if __name__ == '__main__':
     parser.add_argument('--task_type', type=int, help='0 for regression, 1 for binary cls, 2 for multi-cls, 3 for multi-cls ordinal, 4 for bi-cls ordinal', default=2)
     parser.add_argument('--data_size', type=int, help='Size of the dataset to use (in thousands)', default=1000)
     parser.add_argument('--model_name', type=str, help='Name of the LLM to predict for', default='vicuna-13b')
+    parser.add_argument('--customized', action='store_true', help='Whether to use customized dataset', default=False)
+    parser.add_argument('--dataset_path', type=str, help='Path to customized dataset', default='data/customized_1K')
     args = parser.parse_args()
 
     # 0: regression; 1: binary classification; 2: multi-class classification; 
@@ -478,6 +480,9 @@ if __name__ == '__main__':
 
     output_filename = get_output_file_name()
     dataset_path = get_dataset_path()
+    if args.customized:
+        # override the dataset path if using customized dataset instead of LMSYS dataset
+        dataset_path = args.dataset_path
 
     num_epochs = 6
     train_batch_size = 16
