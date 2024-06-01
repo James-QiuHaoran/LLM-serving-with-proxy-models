@@ -9,6 +9,8 @@ LABEL_COLUMN_NAME = 'output_token_length'
 PREDICTION_COLUMN_NAME = 'predicted_length'
 MODEL_COLUMN_NAME = 'model'
 PREDICTION_POSTFIX = '_prediction'
+AZURE_TRACES_DATA_PATH_CODE = 'traces/AzureLLMInferenceTrace_code_int.csv'
+AZURE_TRACES_DATA_PATH_CONV = 'traces/AzureLLMInferenceTrace_conv_int.csv'
 
 
 np.random.seed(42)
@@ -90,7 +92,7 @@ def generate_arrival_list(request_list, total_num_requests):
     return arrival_list
 
 
-def create_jobs(num_jobs, arrival_rate=1, std=1, coefficient_of_variance=3, distribution='poisson'):
+def create_jobs(num_jobs, arrival_rate=1, std=1, coefficient_of_variance=3, distribution='poisson', trace_scale=1.0):
     """
     This method creates a series of jobs based on the specified average arrival rate, standard deviation, and the
     distribution for simulating the job arrival process.
@@ -99,6 +101,7 @@ def create_jobs(num_jobs, arrival_rate=1, std=1, coefficient_of_variance=3, dist
     :param std:double
     :param coefficient_of_variance:double
     :param distribution:str
+    :param trace_scale:double
     :return job_list:Job
     """
     job_list = []
@@ -116,8 +119,38 @@ def create_jobs(num_jobs, arrival_rate=1, std=1, coefficient_of_variance=3, dist
         scale = coefficient_of_variance ** 2 / arrival_rate
         intervals = np.random.gamma(shape, scale, num_jobs)
         arrival_times = np.cumsum(np.sort(intervals))
+    elif distribution == 'azure-conv':
+        # replay azure LLM inference traces
+        # read from CSV file
+        df = pd.read_csv(AZURE_TRACES_DATA_PATH_CONV)
+        # random pick a random number between 0 and len(df)-num_jobs
+        start_index = random.randint(0, len(df) - num_jobs)
+        # select num_jobs rows from start_index to (start_index+num_jobs)
+        df = df.iloc[start_index:start_index+num_jobs]
+        # convert df['TIMESTAMP'] to arrival_times
+        arrival_times = pd.to_datetime(df['TIMESTAMP']).astype(int)
+        arrival_times = np.array(arrival_times)
+        # deduct each arrival_time by the first arrival_time to get relative arrival times
+        arrival_times = arrival_times - arrival_times[0]
+        # apply the trace_scale to intensify the arrival times
+        arrival_times = arrival_times * trace_scale
+    elif distribution == 'azure-code':
+        # replay azure LLM inference traces
+        # read from CSV file
+        df = pd.read_csv(AZURE_TRACES_DATA_PATH_CODE)
+        # random pick a random number between 0 and len(df)-num_jobs
+        start_index = random.randint(0, len(df) - num_jobs)
+        # select num_jobs rows from start_index to (start_index+num_jobs)
+        df = df.iloc[start_index:start_index+num_jobs]
+        # convert df['TIMESTAMP'] to arrival_times
+        arrival_times = pd.to_datetime(df['TIMESTAMP']).astype(int)
+        arrival_times = np.array(arrival_times)
+        # deduct each arrival_time by the first arrival_time to get relative arrival times
+        arrival_times = arrival_times - arrival_times[0]
+        # apply the trace_scale to intensify the arrival times
+        arrival_times = arrival_times * trace_scale
     else:
-        print('Distributions should be chosen from [poisson, uniform, gamma]!')
+        print('Distributions should be chosen from [poisson, uniform, gamma, azure-code, azure-conv]!')
         exit(0)
     print("Generated arrival times:", arrival_times)
 
@@ -131,8 +164,8 @@ def create_jobs(num_jobs, arrival_rate=1, std=1, coefficient_of_variance=3, dist
 
 def create_jobs_from_llm_data(num_jobs, arrival_rate=1, std=1, coefficient_of_variance=3, distribution='poisson',
                               model='vicuna-13b', per_token_latency=0.02, const_latency=0.1,
-                              data_path='../characterization/token_lengths_10000.csv', return_dict=False,
-                              per_round_eval=PER_ROUND_EVAL, turn_id=TURN_ID):
+                              data_path='../characterization/token_lengths_all.csv', return_dict=False,
+                              per_round_eval=PER_ROUND_EVAL, turn_id=TURN_ID, trace_scale=1.0):
     """
     This method creates a series of jobs based on the specified average arrival rate, standard deviation, and the
     distribution for simulating the job arrival process.
@@ -145,6 +178,7 @@ def create_jobs_from_llm_data(num_jobs, arrival_rate=1, std=1, coefficient_of_va
     :param per_token_latency:double
     :param const_latency:double
     :param data_path:str
+    :param trace_scale:double
     :return job_list:Job
     """
     if distribution == 'poisson':
@@ -161,8 +195,38 @@ def create_jobs_from_llm_data(num_jobs, arrival_rate=1, std=1, coefficient_of_va
         scale = coefficient_of_variance ** 2 / arrival_rate
         intervals = np.random.gamma(shape, scale, num_jobs)
         arrival_times = np.cumsum(np.sort(intervals))
+    elif distribution == 'azure-conv':
+        # replay azure LLM inference traces
+        # read from CSV file
+        df = pd.read_csv(AZURE_TRACES_DATA_PATH_CONV)
+        # random pick a random number between 0 and len(df)-num_jobs
+        start_index = random.randint(0, len(df) - num_jobs)
+        # select num_jobs rows from start_index to (start_index+num_jobs)
+        df = df.iloc[start_index:start_index+num_jobs]
+        # convert df['TIMESTAMP'] to arrival_times
+        arrival_times = pd.to_datetime(df['TIMESTAMP']).astype(int)
+        arrival_times = np.array(arrival_times)
+        # deduct each arrival_time by the first arrival_time to get relative arrival times
+        arrival_times = arrival_times - arrival_times[0]
+        # apply the trace_scale to intensify the arrival times
+        arrival_times = arrival_times * trace_scale
+    elif distribution == 'azure-code':
+        # replay azure LLM inference traces
+        # read from CSV file
+        df = pd.read_csv(AZURE_TRACES_DATA_PATH_CODE)
+        # random pick a random number between 0 and len(df)-num_jobs
+        start_index = random.randint(0, len(df) - num_jobs)
+        # select num_jobs rows from start_index to (start_index+num_jobs)
+        df = df.iloc[start_index:start_index+num_jobs]
+        # convert df['TIMESTAMP'] to arrival_times
+        arrival_times = pd.to_datetime(df['TIMESTAMP']).astype(int)
+        arrival_times = np.array(arrival_times)
+        # deduct each arrival_time by the first arrival_time to get relative arrival times
+        arrival_times = arrival_times - arrival_times[0]
+        # apply the trace_scale to intensify the arrival times
+        arrival_times = arrival_times * trace_scale
     else:
-        print('Distributions should be chosen from [poisson, uniform, gamma]!')
+        print('Distributions should be chosen from [poisson, uniform, gamma, azure-code, azure-conv]!')
         exit(0)
     # print("Generated arrival times:", arrival_times)
 
@@ -234,6 +298,22 @@ if __name__ == '__main__':
         job.print_info()
 
     # Test 3
-    jobs = create_jobs_from_llm_data(10, data_path='prediction/regression_predictions_vicuna.csv')
+    jobs = create_jobs_from_llm_data(10, data_path='../characterization/token_lengths_all.csv')
+    for job in jobs:
+        job.print_info()
+
+    # Test 4
+    jobs = create_jobs(10, distribution='azure-conv', trace_scale=1)
+    for job in jobs:
+        job.print_info()
+    jobs = create_jobs(10, distribution='azure-code', trace_scale=0.2)
+    for job in jobs:
+        job.print_info()
+
+    # Test 5
+    jobs = create_jobs_from_llm_data(10, data_path='../characterization/token_lengths_all.csv', distribution='azure-conv', trace_scale=1)
+    for job in jobs:
+        job.print_info()
+    jobs = create_jobs_from_llm_data(10, data_path='../characterization/token_lengths_all.csv', distribution='azure-code', trace_scale=0.3)
     for job in jobs:
         job.print_info()
