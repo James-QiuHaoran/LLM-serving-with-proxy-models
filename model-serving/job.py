@@ -133,7 +133,7 @@ def create_jobs(num_jobs, arrival_rate=1, std=1, coefficient_of_variance=3, dist
         # deduct each arrival_time by the first arrival_time to get relative arrival times
         arrival_times = arrival_times - arrival_times[0]
         # apply the trace_scale to intensify the arrival times
-        arrival_times = arrival_times * trace_scale
+        arrival_times = np.round(arrival_times / trace_scale, 1)
     elif distribution == 'azure-code':
         # replay azure LLM inference traces
         # read from CSV file
@@ -148,7 +148,7 @@ def create_jobs(num_jobs, arrival_rate=1, std=1, coefficient_of_variance=3, dist
         # deduct each arrival_time by the first arrival_time to get relative arrival times
         arrival_times = arrival_times - arrival_times[0]
         # apply the trace_scale to intensify the arrival times
-        arrival_times = arrival_times * trace_scale
+        arrival_times = np.round(arrival_times / trace_scale, 1)
     else:
         print('Distributions should be chosen from [poisson, uniform, gamma, azure-code, azure-conv]!')
         exit(0)
@@ -209,7 +209,7 @@ def create_jobs_from_llm_data(num_jobs, arrival_rate=1, std=1, coefficient_of_va
         # deduct each arrival_time by the first arrival_time to get relative arrival times
         arrival_times = arrival_times - arrival_times[0]
         # apply the trace_scale to intensify the arrival times
-        arrival_times = arrival_times * trace_scale
+        arrival_times = np.round(arrival_times / trace_scale, 1)
     elif distribution == 'azure-code':
         # replay azure LLM inference traces
         # read from CSV file
@@ -224,7 +224,7 @@ def create_jobs_from_llm_data(num_jobs, arrival_rate=1, std=1, coefficient_of_va
         # deduct each arrival_time by the first arrival_time to get relative arrival times
         arrival_times = arrival_times - arrival_times[0]
         # apply the trace_scale to intensify the arrival times
-        arrival_times = arrival_times * trace_scale
+        arrival_times = np.round(arrival_times / trace_scale, 1)
     else:
         print('Distributions should be chosen from [poisson, uniform, gamma, azure-code, azure-conv]!')
         exit(0)

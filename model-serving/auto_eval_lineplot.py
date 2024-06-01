@@ -35,7 +35,8 @@ exps = {
     4: RESULTS_DIR + 'results-gamma-varying-cv-vicuna-'+str(NUM_JOBS)+'jobs-rate-003.csv',
     # 5: RESULTS_DIR + 'results-gamma-varying-num-jobs-vicuna-rate-003-cv-2.csv',
     # 6: RESULTS_DIR + 'results-poisson-varying-models-20jobs-rate-1.csv',
-    # 7: RESULTS_DIR + 'results-gamma-varying-model-20jobs-rate-005-cv-2.csv'
+    # 7: RESULTS_DIR + 'results-gamma-varying-model-20jobs-rate-005-cv-2.csv',
+    8: RESULTS_DIR + 'results-azure-varying-scales-vicuna-'+str(NUM_JOBS)+'jobs.csv',
 }
 fig_size_w = 6
 fig_size_h = 3
@@ -52,6 +53,10 @@ def key_figure(distribution, key, x_key):
     elif distribution == 'gamma' and 'jct' in key and x_key == 'cv':
         return True
     elif distribution == 'gamma' and key == 'throughput' and x_key == 'cv':
+        return True
+    elif distribution == 'azure' and 'jct' in key and x_key == 'scale':
+        return True
+    elif distribution == 'azure' and key == 'throughput' and x_key == 'scale':
         return True
     else:
         return False
@@ -157,15 +162,6 @@ if 1 in exps:
     if REMOVING_L1:
         df = df[~df['algorithm'].str.contains('l1')]
 
-    # add cache layer
-    if CACHING:
-        df_sol = df[df['algorithm'] == 'sjfp-multi-cls-mse']
-        df_sol['algorithm'] = 'with-cache'
-        df_sol['jct'] *= (1 - cache)
-        df_sol['waiting_time'] *= (1 - cache)
-        df_sol['throughput'] *= (1 + cache)
-        df = pd.concat([df, df_sol])
-
     draw_lineplots(df, 'arrival_rate', 'Arrival Rate', distribution='poisson')
     report_stats(df, 'arrival_rate', distribution='poisson')
 
@@ -185,17 +181,6 @@ if 2 in exps:
     if REMOVING_L1:
         df = df[~df['algorithm'].str.contains('l1')]
 
-    # add cache layer
-    if CACHING:
-        df_sol = df[df['algorithm'] == 'sjfp-multi-cls-mse']
-        df_sol['algorithm'] = 'with-cache'
-        df_sol['jct'] *= (1 - cache)
-        df_sol['waiting_time'] *= (1 - cache)
-        # df_sol['throughput'] *= (1 + cache)
-        df_sol.loc[df_sol['num_jobs'] <= 15, 'throughput'] *= 1.1
-        df_sol.loc[df_sol['num_jobs'] > 15, 'throughput'] *= (1 + cache)
-        df = pd.concat([df, df_sol])
-
     draw_lineplots(df, 'num_jobs', 'Num of Jobs', distribution='poisson')
 
 if 3 in exps:
@@ -214,15 +199,6 @@ if 3 in exps:
     if REMOVING_L1:
         df = df[~df['algorithm'].str.contains('l1')]
 
-    # add cache layer
-    if CACHING:
-        df_sol = df[df['algorithm'] == 'sjfp-multi-cls-mse']
-        df_sol['algorithm'] = 'with-cache'
-        df_sol['jct'] *= (1 - cache)
-        df_sol['waiting_time'] *= (1 - cache)
-        df_sol['throughput'] *= (1 + cache)
-        df = pd.concat([df, df_sol])
-
     draw_lineplots(df, 'arrival_rate', 'Arrival Rate', distribution='gamma')
 
 if 4 in exps:
@@ -240,18 +216,6 @@ if 4 in exps:
     # remove l1-based algo
     if REMOVING_L1:
         df = df[~df['algorithm'].str.contains('l1')]
-
-    # add cache layer
-    if CACHING:
-        df_sol = df[df['algorithm'] == 'sjfp-multi-cls-mse']
-        df_sol['algorithm'] = 'with-cache'
-        df_sol['jct'] *= (1 - cache)
-        df_sol['waiting_time'] *= (1 - cache)
-        # df_sol[df_sol['cv'] <= 1]['throughput'] *= 1.05
-        df_sol.loc[df_sol['cv'] <= 1, 'throughput'] *= 1.05
-        # df_sol[df_sol['cv'] > 1]['throughput'] *= (1 + cache)
-        df_sol.loc[df_sol['cv'] > 1, 'throughput'] *= (1 + cache)
-        df = pd.concat([df, df_sol])
 
     draw_lineplots(df, 'cv', 'Coefficient of Variance', distribution='gamma')
     report_stats(df, 'cv', distribution='gamma')
@@ -272,15 +236,23 @@ if 5 in exps:
     if REMOVING_L1:
         df = df[~df['algorithm'].str.contains('l1')]
 
-    # add cache layer
-    if CACHING:
-        df_sol = df[df['algorithm'] == 'sjfp-multi-cls-mse']
-        df_sol['algorithm'] = 'with-cache'
-        df_sol['jct'] *= (1 - cache)
-        df_sol['waiting_time'] *= (1 - cache)
-        # df_sol['throughput'] *= (1 + cache)
-        df_sol.loc[df_sol['num_jobs'] <= 15, 'throughput'] *= 1.1
-        df_sol.loc[df_sol['num_jobs'] > 15, 'throughput'] *= (1 + cache)
-        df = pd.concat([df, df_sol])
-
     draw_lineplots(df, 'num_jobs', 'Num of Jobs', distribution='gamma')
+
+if 8 in exps:
+    # EXP #8 - experiments on Azure traces with varying scales
+    print('>>> EXP #8 - experiments on Azure traces with varying scales')
+    df = pd.read_csv(exps[8])
+    # print(df.head())
+
+    # reduced boxes in boxplot
+    all_boxes = list(df['scale'].unique())
+    boxes_to_plot = [elem for i, elem in enumerate(all_boxes) if i % x_ticks_reduction == 0]
+    print(all_boxes, '->', boxes_to_plot)
+    df = df[df['scale'].isin(boxes_to_plot)]
+
+    # remove l1-based algo
+    if REMOVING_L1:
+        df = df[~df['algorithm'].str.contains('l1')]
+
+    draw_lineplots(df, 'scale', 'Scale', distribution='azure')
+    report_stats(df, 'scale', distribution='azure')

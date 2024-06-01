@@ -23,24 +23,34 @@ def run_exp(num_jobs, distribution, avg_arrival_rate, algorithms, use_llm=True, 
     if use_llm:
         # for a single predictor used in sjfp
         if len(classifiers) == 1:
-            job_list = create_jobs_from_llm_data(num_jobs, model=model,
-                                                distribution=distribution, arrival_rate=avg_arrival_rate,
-                                                std=std_arrival_rate, coefficient_of_variance=cv_arrival_rate,
-                                                data_path=data_path,
-                                                per_token_latency=per_token_latency, const_latency=const_latency)
+            if distribution == 'azure-conv' or distribution == 'azure-code':
+                job_list = create_jobs_from_llm_data(
+                    num_jobs, model=model, distribution=distribution, data_path=data_path,
+                    per_token_latency=per_token_latency, const_latency=const_latency, trace_scale=avg_arrival_rate)
+            else:
+                job_list = create_jobs_from_llm_data(
+                    num_jobs, model=model, distribution=distribution, arrival_rate=avg_arrival_rate,
+                    std=std_arrival_rate, coefficient_of_variance=cv_arrival_rate, data_path=data_path,
+                    per_token_latency=per_token_latency, const_latency=const_latency)
         else:
             # for multiple predictors used in sjfp
-            job_dict = create_jobs_from_llm_data(num_jobs, model=model,
-                                                distribution=distribution, arrival_rate=avg_arrival_rate,
-                                                std=std_arrival_rate, coefficient_of_variance=cv_arrival_rate,
-                                                data_path=data_path,
-                                                per_token_latency=per_token_latency, const_latency=const_latency,
-                                                return_dict=True)
+            if distribution == 'azure-conv' or distribution == 'azure-code':
+                job_dict = create_jobs_from_llm_data(
+                    num_jobs, model=model, distribution=distribution, data_path=data_path,
+                    per_token_latency=per_token_latency, const_latency=const_latency, return_dict=True, trace_scale=avg_arrival_rate)
+            else:
+                job_dict = create_jobs_from_llm_data(
+                    num_jobs, model=model, distribution=distribution, arrival_rate=avg_arrival_rate,
+                    std=std_arrival_rate, coefficient_of_variance=cv_arrival_rate, data_path=data_path,
+                    per_token_latency=per_token_latency, const_latency=const_latency, return_dict=True)
             job_list = job_dict[classifiers[0]]  # for FCFS and SJF
     else:
         job_list = create_jobs(num_jobs, distribution=distribution, arrival_rate=avg_arrival_rate,
                                std=std_arrival_rate, coefficient_of_variance=cv_arrival_rate)
-    print('Created jobs with', distribution, 'distribution at', avg_arrival_rate, 'avg requests/sec')
+    if distribution == 'azure-conv' or distribution == 'azure-code':
+        print('Created jobs sampling from Azure traces with scale =', avg_arrival_rate)
+    else:
+        print('Created jobs with', distribution, 'distribution at', avg_arrival_rate, 'avg requests/sec')
 
     map_of_completed_job_lists = {}
     ret_fcfs = []

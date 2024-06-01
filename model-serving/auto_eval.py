@@ -25,16 +25,18 @@ def main():
     num_jobs_list = [15, 20, 25, 30, 35, 40, 45, 50, 55, 60]
     arrival_rates_gamma = [0.01, 0.03, 0.05, 0.07, 0.09, 0.11, 0.13, 0.15, 0.17, 0.19]
     cv_arrival_rates_gamma = [1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5]
+    azure_scales = [0.5, 1, 2, 5, 10, 20, 50, 100, 200, 500]
 
     # experiments and result CSV file names
     exps = {
-        1: RESULTS_DIR + 'results-poisson-varying-rates-vicuna-'+str(NUM_JOBS)+'jobs.csv',
+        # 1: RESULTS_DIR + 'results-poisson-varying-rates-vicuna-'+str(NUM_JOBS)+'jobs.csv',
         # 2: RESULTS_DIR + 'results-poisson-varying-num-jobs-vicuna-rate-05.csv',
         # 3: RESULTS_DIR + 'results-gamma-varying-rates-vicuna-'+str(NUM_JOBS)+'jobs-cv-2.csv',
-        4: RESULTS_DIR + 'results-gamma-varying-cv-vicuna-'+str(NUM_JOBS)+'jobs-rate-003.csv',
+        # 4: RESULTS_DIR + 'results-gamma-varying-cv-vicuna-'+str(NUM_JOBS)+'jobs-rate-003.csv',
         # 5: RESULTS_DIR + 'results-gamma-varying-num-jobs-vicuna-rate-003-cv-2.csv',
         # 6: RESULTS_DIR + 'results-poisson-varying-models-20jobs-rate-1.csv',
-        # 7: RESULTS_DIR + 'results-gamma-varying-model-20jobs-rate-005-cv-2.csv'
+        # 7: RESULTS_DIR + 'results-gamma-varying-model-20jobs-rate-005-cv-2.csv',
+        8: RESULTS_DIR + 'results-azure-varying-scales-vicuna-'+str(NUM_JOBS)+'jobs.csv',
     }
     if not os.path.exists(RESULTS_DIR):
         os.makedirs(RESULTS_DIR)
@@ -485,6 +487,67 @@ def main():
             # print(df)
             # print(len(df))
             df.to_csv(exps[7])
+    if 8 in exps:
+        # EXP #8 - experiments on Azure traces with varying scales
+        distribution = 'azure-conv'  # an alternative is 'azure-code'
+        model = 'vicuna-13b'
+        df = pd.DataFrame(columns=['scale', 'algorithm', 'waiting_time', 'jct', 'throughput', 'model'])
+        for scale in azure_scales:
+            print('Azure scale =', scale)
+            wait_time_list_map = init_map(algorithms)
+            jct_list_map = init_map(algorithms)
+            throughput_list_map = init_map(algorithms)
+            p99_jct_list_map = init_map(algorithms)
+            for _ in range(NUM_EXP_RUNS):
+                result = run_exp(NUM_JOBS, distribution, scale, algorithms, model=model, data_path=LLM_DATA_PATH, classifiers=CLASSIFIERS)
+                for algo in algorithms:
+                    if algo != 'sjfp' or len(CLASSIFIERS) == 1:
+                        wait_time_list_map[algo].append(result[algo][0])
+                        jct_list_map[algo].append(result[algo][1])
+                        throughput_list_map[algo].append(result[algo][2])
+                        p99_jct_list_map[algo].append(result[algo][3])
+                    else:
+                        # there are multiple predictors in sjfp
+                        for classifier in CLASSIFIERS:
+                            wait_time_list_map[algo+'-'+classifier].append(result[algo][classifier][0])
+                            jct_list_map[algo+'-'+classifier].append(result[algo][classifier][1])
+                            throughput_list_map[algo+'-'+classifier].append(result[algo][classifier][2])
+                            p99_jct_list_map[algo+'-'+classifier].append(result[algo][classifier][3])
+                new_rows = []
+                for algo in algorithms:
+                    if algo != 'sjfp' or len(CLASSIFIERS) == 1:
+                        new_rows.append({
+                            'scale': scale, 'algorithm': algo, 'model': model,
+                            'waiting_time': result[algo][0],
+                            'jct': result[algo][1],
+                            'throughput': result[algo][2],
+                            'p99_jct': result[algo][3]})
+                    else:
+                        # there are multiple predictors in sjfp
+                        for classifier in CLASSIFIERS:
+                            new_rows.append({
+                                'scale': scale, 'algorithm': algo+'-'+classifier, 'model': model,
+                                'waiting_time': result[algo][classifier][0],
+                                'jct': result[algo][classifier][1],
+                                'throughput': result[algo][classifier][2],
+                                'p99_jct': result[algo][classifier][3]})
+                df = pd.concat([df, pd.DataFrame(new_rows)])
+            for algo in algorithms:
+                if algo != 'sjfp' or len(CLASSIFIERS) == 1:
+                    print(algo.upper(), 'Avg waiting time:', np.mean(wait_time_list_map[algo]))
+                    print(algo.upper(), 'Avg JCT:', np.mean(jct_list_map[algo]))
+                    print(algo.upper(), 'p99 JCT:', np.mean(p99_jct_list_map[algo]))
+                    print(algo.upper(), 'Avg throughput:', np.mean(throughput_list_map[algo]))
+                else:
+                    # there are multiple predictors in sjfp
+                    for classifier in CLASSIFIERS:
+                        print(algo.upper()+'-'+classifier, 'Avg waiting time:', np.mean(wait_time_list_map[algo+'-'+classifier]))
+                        print(algo.upper()+'-'+classifier, 'Avg JCT:', np.mean(jct_list_map[algo+'-'+classifier]))
+                        print(algo.upper()+'-'+classifier, 'p99 JCT:', np.mean(p99_jct_list_map[algo+'-'+classifier]))
+                        print(algo.upper()+'-'+classifier, 'Avg throughput:', np.mean(throughput_list_map[algo+'-'+classifier]))
+            # print(df)
+            # print(len(df))
+            df.to_csv(exps[8])
 
 
 if __name__ == '__main__':
